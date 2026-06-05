@@ -1,7 +1,7 @@
 import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
@@ -17,17 +17,9 @@ router = APIRouter()
 settings = get_settings()
 
 
-def _enqueue_processing(document_id: str) -> None:
-    try:
-        from app.worker import process_document_task
-
-        process_document_task.delay(document_id)
-    except Exception:
-        process_document(document_id)
-
-
 @router.post("/upload", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED)
 async def upload_document(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -61,7 +53,7 @@ async def upload_document(
     db.commit()
     db.refresh(doc)
 
-    _enqueue_processing(doc.id)
+    background_tasks.add_task(process_document, doc.id)
     return DocumentResponse.model_validate(doc)
 
 
@@ -124,6 +116,7 @@ def delete_document(
 @router.post("/{document_id}/reprocess", response_model=DocumentResponse)
 def reprocess_document(
     document_id: str,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -138,6 +131,6 @@ def reprocess_document(
     doc.status = DocumentStatus.PENDING
     doc.error_message = None
     db.commit()
-    _enqueue_processing(doc.id)
+    background_tasks.add_task(process_document, doc.id)
     db.refresh(doc)
     return DocumentResponse.model_validate(doc)

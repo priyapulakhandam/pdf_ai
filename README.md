@@ -16,7 +16,7 @@ User Query → Semantic Search → Top Chunks → Gemini LLM → Answer + Citati
 | Database | PostgreSQL |
 | Vector DB | Qdrant |
 | AI | Google Gemini (LLM + embeddings) |
-| Cache / Queue | Redis, Celery |
+| Cache | Redis |
 
 ## Features
 
@@ -26,7 +26,7 @@ User Query → Semantic Search → Top Chunks → Gemini LLM → Answer + Citati
 - Multi-PDF chat sessions
 - Streaming responses (SSE)
 - Redis caching for retrieval
-- Background PDF processing (Celery)
+- Background PDF processing (FastAPI BackgroundTasks)
 - Docker Compose for local development
 
 ## Quick Start (Docker)
@@ -69,7 +69,6 @@ pip install -r requirements.txt
 cp .env.example .env
 # Start Postgres, Redis, Qdrant (or use docker compose for infra only)
 uvicorn app.main:app --reload
-celery -A app.worker.celery_app worker --loglevel=info
 ```
 
 ## API Endpoints
@@ -118,7 +117,6 @@ Set `NEXT_PUBLIC_API_URL=https://your-api.onrender.com/api/v1`.
 
 - Build: `pip install -r requirements.txt`
 - Start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-- Worker: `celery -A app.worker.celery_app worker --loglevel=info`
 - Env: `DATABASE_URL`, `SECRET_KEY`, `GEMINI_API_KEY`, `QDRANT_URL`, `QDRANT_API_KEY`, `REDIS_URL`, `CORS_ORIGINS`
 
 ## Environment Variables
