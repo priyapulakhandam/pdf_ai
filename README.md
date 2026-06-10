@@ -48,9 +48,7 @@ docker compose up --build
 
 4. Open the app:
 
-- Frontend: http://localhost:3000 (run separately — see below)
-- API: http://localhost:8000
-- API docs: http://localhost:8000/docs
+- Frontend: https://pdf-ai-phi-seven.vercel.app
 
 ### Frontend (local dev)
 
@@ -121,7 +119,7 @@ Set `NEXT_PUBLIC_API_URL=https://your-api.onrender.com/api/v1`.
 
 ## Environment Variables
 
-See `backend/.env.example` and `frontend/.env.example`.
+See `backend/.env` and `frontend/.env`.
 
 ## Project Structure
 
