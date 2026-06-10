@@ -28,11 +28,31 @@ def get_qdrant() -> QdrantClient:
 def ensure_collection() -> None:
     client = get_qdrant()
     collections = [c.name for c in client.get_collections().collections]
+
     if settings.qdrant_collection not in collections:
         client.create_collection(
             collection_name=settings.qdrant_collection,
-            vectors_config=qmodels.VectorParams(size=_vector_size(), distance=qmodels.Distance.COSINE),
+            vectors_config=qmodels.VectorParams(
+                size=_vector_size(),
+                distance=qmodels.Distance.COSINE,
+            ),
         )
+
+    # Create payload indexes
+    try:
+        client.create_payload_index(
+            collection_name=settings.qdrant_collection,
+            field_name="user_id",
+            field_schema=qmodels.PayloadSchemaType.KEYWORD,
+        )
+
+        client.create_payload_index(
+            collection_name=settings.qdrant_collection,
+            field_name="document_id",
+            field_schema=qmodels.PayloadSchemaType.KEYWORD,
+        )
+    except Exception:
+        pass
 
 
 def upsert_chunks(
